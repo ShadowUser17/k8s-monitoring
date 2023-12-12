@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 31,
+  "id": 51,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -199,11 +199,24 @@
             "uid": "${source}"
           },
           "editorMode": "code",
-          "expr": "sum(irate(loggen_events_total{service=\"log-generator-api\"}[$__rate_interval])) by(instance)",
+          "expr": "avg(irate(loggen_events_total{service=\"log-generator-api\"}[$__rate_interval]))",
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "AVG",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${source}"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(loggen_events_total{service=\"log-generator-api\"}[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "SUM",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Total events",
@@ -292,11 +305,24 @@
             "uid": "${source}"
           },
           "editorMode": "code",
-          "expr": "sum(irate(loggen_event_bytes_total{service=\"log-generator-api\"}[$__rate_interval])) by(instance)",
+          "expr": "avg(irate(loggen_event_bytes_total{service=\"log-generator-api\"}[$__rate_interval]))",
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "AVG",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${source}"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(loggen_event_bytes_total{service=\"log-generator-api\"}[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "SUM",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Total bytes",
@@ -336,6 +362,6 @@
   "timezone": "",
   "title": "kube-log-generator",
   "uid": "be428cfb-fd36-474e-9bbc-91f703ba6dc4",
-  "version": 2,
+  "version": 7,
   "weekStart": ""
 }
