@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 51,
+  "id": 108,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -362,6 +362,6 @@
   "timezone": "",
   "title": "kube-log-generator",
   "uid": "be428cfb-fd36-474e-9bbc-91f703ba6dc4",
-  "version": 7,
+  "version": 1,
   "weekStart": ""
 }
