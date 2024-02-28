@@ -20,7 +20,7 @@ spec:
             description: "Service {{ $labels.project }}/{{ $labels.name }} run by ArgoCD is currently not in sync!"
 
         - alert: "ArgocdServiceUnhealthy"
-          expr: 'argocd_app_info{health_status!="Healthy", name!=""} != 0'
+          expr: 'argocd_app_info{health_status!~"Healthy|Progressing", name!=""} != 0'
           for: "15m"
           labels:
             severity: "warning"
@@ -36,3 +36,12 @@ spec:
           annotations:
             summary: "ArgoCD service has auto-sync disabled (instance {{ $labels.instance }})"
             description: "Service {{ $labels.project }}/{{ $labels.name }} has auto-sync disabled!"
+
+        - alert: "ArgocdAppSyncFailed"
+          expr: 'round(increase(argocd_app_sync_total{phase!="Succeeded", name!=""}[10m])) > 0'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "ArgoCD service has failed to sync (instance {{ $labels.instance }})"
+            description: "Service {{ $labels.project }}/{{ $labels.name }} has failed to sync with the status {{ $labels.phase }} the past 10m."
