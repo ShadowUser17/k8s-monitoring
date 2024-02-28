@@ -11,7 +11,7 @@ spec:
     - name: "./argocd.rules"
       rules:
         - alert: "ArgocdServiceNotSynced"
-          expr: 'argocd_app_info{sync_status!="Synced"} != 0'
+          expr: 'argocd_app_info{sync_status!="Synced", name!=""} != 0'
           for: "15m"
           labels:
             severity: "warning"
@@ -20,10 +20,19 @@ spec:
             description: "Service {{ $labels.project }}/{{ $labels.name }} run by ArgoCD is currently not in sync!"
 
         - alert: "ArgocdServiceUnhealthy"
-          expr: 'argocd_app_info{health_status!="Healthy"} != 0'
+          expr: 'argocd_app_info{health_status!="Healthy", name!=""} != 0'
           for: "15m"
           labels:
             severity: "warning"
           annotations:
             summary: "ArgoCD service unhealthy (instance {{ $labels.instance }})"
             description: "Service {{ $labels.project }}/{{ $labels.name }} run by ArgoCD is currently not healthy!"
+
+        - alert: "ArgocdAppAutoSyncDisabled"
+          expr: 'argocd_app_info{autosync_enabled!="true", name!=""} > 0'
+          for: "1h"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "ArgoCD service has auto-sync disabled (instance {{ $labels.instance }})"
+            description: "Service {{ $labels.project }}/{{ $labels.name }} has auto-sync disabled!"
