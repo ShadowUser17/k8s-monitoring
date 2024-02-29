@@ -45,3 +45,12 @@ spec:
           annotations:
             summary: "ArgoCD service has failed to sync (instance {{ $labels.instance }})"
             description: "Service {{ $labels.project }}/{{ $labels.name }} has failed to sync with the status {{ $labels.phase }} the past 10m."
+
+        - alert: "ArgocdNotificationDeliveryFailed"
+          expr: 'round(increase(argocd_notifications_deliveries_total{succeeded!="true"}[10m])) > 0'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "ArgoCD notification delivery failed (instance {{ $labels.instance }})"
+            description: "The notification job {{ $labels.job }} has failed to deliver to {{ $labels.service }} for the past 10m."
