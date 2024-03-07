@@ -8,7 +8,7 @@ metadata:
     release: "prom-operator"
 spec:
   groups:
-    - name: "./trivy-operator.rules"
+    - name: "trivy-operator.rules"
       rules:
         - alert: "Resource has misconfigurations"
           expr: 'sum(trivy_resource_configaudits{severity=~"Critical|High|Medium"}) by(name) > 0'

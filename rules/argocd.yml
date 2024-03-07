@@ -8,7 +8,7 @@ metadata:
     release: "prom-operator"
 spec:
   groups:
-    - name: "./argocd.rules"
+    - name: "argocd.rules"
       rules:
         - alert: "ArgocdServiceNotSynced"
           expr: 'argocd_app_info{sync_status!="Synced", name!=""} != 0'
