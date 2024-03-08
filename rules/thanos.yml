@@ -526,3 +526,234 @@ spec:
             summary: "Thanos Store is having high latency for bucket operations."
             description: "Thanos Store {{$labels.job}} Bucket has a 99th percentile latency of {{$value}} seconds for the bucket operations."
             runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoreobjstoreoperationlatencyhigh"
+
+        - alert: "ThanosRuleQueueIsDroppingAlerts"
+          expr: 'sum by(job, instance) (rate(thanos_alert_queue_alerts_dropped_total{job=~".*thanos-rule.*"}[5m])) > 0'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Rule is failing to queue alerts."
+            description: "Thanos Rule {{$labels.instance}} is failing to queue alerts."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulequeueisdroppingalerts"
+
+        - alert: "ThanosRuleSenderIsFailingAlerts"
+          expr: 'sum by(job, instance) (rate(thanos_alert_sender_alerts_dropped_total{job=~".*thanos-rule.*"}[5m])) > 0'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Rule is failing to send alerts to alertmanager."
+            description: "Thanos Rule {{$labels.instance}} is failing to send alerts to alertmanager."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulesenderisfailingalerts"
+
+        - alert: "ThanosRuleHighRuleEvaluationFailures"
+          expr: |
+            (
+              sum by(job, instance) (rate(prometheus_rule_evaluation_failures_total{job=~".*thanos-rule.*"}[5m]))
+            /
+              sum by(job, instance) (rate(prometheus_rule_evaluations_total{job=~".*thanos-rule.*"}[5m])) * 100 > 5
+            )
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Rule is failing to evaluate rules."
+            description: "Thanos Rule {{$labels.instance}} is failing to evaluate rules."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulehighruleevaluationfailures"
+
+        - alert: "ThanosRuleHighRuleEvaluationWarnings"
+          expr: 'sum by(job, instance) (rate(thanos_rule_evaluation_with_warnings_total{job=~".*thanos-rule.*"}[5m])) > 0'
+          for: "15m"
+          labels:
+            severity: "info"
+          annotations:
+            summary: "Thanos Rule has high number of evaluation warnings."
+            description: "Thanos Rule {{$labels.instance}} has high number of evaluation warnings."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulehighruleevaluationwarnings"
+
+        - alert: "ThanosRuleRuleEvaluationLatencyHigh"
+          expr: |
+            (
+              sum by(job, instance, rule_group) (prometheus_rule_group_last_duration_seconds{job=~".*thanos-rule.*"})
+            >
+              sum by(job, instance, rule_group) (prometheus_rule_group_interval_seconds{job=~".*thanos-rule.*"})
+            )
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Rule has high rule evaluation latency."
+            description: "Thanos Rule {{$labels.instance}} has higher evaluation latency than interval for {{$labels.rule_group}}."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosruleruleevaluationlatencyhigh"
+
+        - alert: "ThanosRuleGrpcErrorRate"
+          expr: |
+            (
+              sum by(job, instance) (rate(grpc_server_handled_total{grpc_code=~"Unknown|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-rule.*"}[5m]))
+            /
+              sum by(job, instance) (rate(grpc_server_started_total{job=~".*thanos-rule.*"}[5m])) * 100 > 5
+            )
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Rule is failing to handle grpc requests."
+            description: "Thanos Rule {{$labels.job}} is failing to handle {{$value | humanize}}% of requests."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulegrpcerrorrate"
+
+        - alert: "ThanosRuleConfigReloadFailure"
+          expr: 'avg by(job, instance) (thanos_rule_config_last_reload_successful{job=~".*thanos-rule.*"}) != 1'
+          for: "5m"
+          labels:
+            severity: "info"
+          annotations:
+            summary: "Thanos Rule has not been able to reload configuration."
+            description: "Thanos Rule {{$labels.job}} has not been able to reload its configuration."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosruleconfigreloadfailure"
+
+        - alert: "ThanosRuleQueryHighDNSFailures"
+          expr: |
+            (
+              sum by(job, instance) (rate(thanos_rule_query_apis_dns_failures_total{job=~".*thanos-rule.*"}[5m]))
+            /
+              sum by(job, instance) (rate(thanos_rule_query_apis_dns_lookups_total{job=~".*thanos-rule.*"}[5m])) * 100 > 1
+            )
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Rule is having high number of DNS failures."
+            description: "Thanos Rule {{$labels.job}} has {{$value | humanize}}% of failing DNS queries for query endpoints."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulequeryhighdnsfailures"
+
+        - alert: "ThanosRuleAlertmanagerHighDNSFailures"
+          expr: |
+            (
+              sum by(job, instance) (rate(thanos_rule_alertmanagers_dns_failures_total{job=~".*thanos-rule.*"}[5m]))
+            /
+              sum by(job, instance) (rate(thanos_rule_alertmanagers_dns_lookups_total{job=~".*thanos-rule.*"}[5m])) * 100 > 1
+            )
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Rule is having high number of DNS failures."
+            description: "Thanos Rule {{$labels.instance}} has {{$value | humanize}}% of failing DNS queries for Alertmanager endpoints."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulealertmanagerhighdnsfailures"
+
+        - alert: "ThanosRuleNoEvaluationFor10Intervals"
+          expr: |
+            time() - max by(job, instance, group) (prometheus_rule_group_last_evaluation_timestamp_seconds{job=~".*thanos-rule.*"})
+            >
+            10 * max by(job, instance, group) (prometheus_rule_group_interval_seconds{job=~".*thanos-rule.*"})
+          for: "5m"
+          labels:
+            severity: "info"
+          annotations:
+            summary: "Thanos Rule has rule groups that did not evaluate for 10 intervals."
+            description: "Thanos Rule {{$labels.job}} has rule groups that did not evaluate for at least 10x of their expected interval."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosrulenoevaluationfor10intervals"
+
+        - alert: "ThanosNoRuleEvaluations"
+          expr: |
+            sum by(job, instance) (rate(prometheus_rule_evaluations_total{job=~".*thanos-rule.*"}[5m])) <= 0
+            and
+            sum by(job, instance) (thanos_rule_loaded_rules{job=~".*thanos-rule.*"}) > 0
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Rule did not perform any rule evaluations."
+            description: "Thanos Rule {{$labels.instance}} did not perform any rule evaluations in the past 10 minutes."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosnoruleevaluations"
+
+        - alert: "ThanosBucketReplicateErrorRate"
+          expr: |
+            (
+              sum by(job) (rate(thanos_replicate_replication_runs_total{result="error", job=~".*thanos-bucket-replicate.*"}[5m]))
+            / on(job) group_left
+              sum by(job) (rate(thanos_replicate_replication_runs_total{job=~".*thanos-bucket-replicate.*"}[5m]))
+            ) * 100 >= 10
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Replicate is failing to run."
+            description: "Thanos Replicate is failing to run, {{$value | humanize}}% of attempts failed."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosbucketreplicateerrorrate"
+
+        - alert: "ThanosBucketReplicateRunLatency"
+          expr: |
+            (
+              histogram_quantile(0.99, sum by(job) (rate(thanos_replicate_replication_run_duration_seconds_bucket{job=~".*thanos-bucket-replicate.*"}[5m]))) > 20
+            and
+              sum by(job) (rate(thanos_replicate_replication_run_duration_seconds_bucket{job=~".*thanos-bucket-replicate.*"}[5m])) > 0
+            )
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Replicate has a high latency for replicate operations."
+            description: "Thanos Replicate {{$labels.job}} has a 99th percentile latency of {{$value}} seconds for the replicate operations."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosbucketreplicaterunlatency"
+
+        - alert: "ThanosCompactIsDown"
+          expr: 'absent(up{job=~".*thanos-compact.*"} == 1)'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos component has disappeared."
+            description: "ThanosCompact has disappeared. Prometheus target for the component cannot be discovered."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompactisdown"
+
+        - alert: "ThanosQueryIsDown"
+          expr: 'absent(up{job=~".*thanos-query.*"} == 1)'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos component has disappeared."
+            description: "ThanosQuery has disappeared. Prometheus target for the component cannot be discovered."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryisdown"
+
+        - alert: "ThanosReceiveIsDown"
+          expr: 'absent(up{job=~".*thanos-receive.*"} == 1)'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos component has disappeared."
+            description: "ThanosReceive has disappeared. Prometheus target for the component cannot be discovered."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceiveisdown"
+
+        - alert: "ThanosRuleIsDown"
+          expr: 'absent(up{job=~".*thanos-rule.*"} == 1)'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos component has disappeared."
+            description: "ThanosRule has disappeared. Prometheus target for the component cannot be discovered."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosruleisdown"
+
+        - alert: "ThanosSidecarIsDown"
+          expr: 'absent(up{job=~".*thanos-sidecar.*"} == 1)'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos component has disappeared."
+            description: "ThanosSidecar has disappeared. Prometheus target for the component cannot be discovered."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanossidecarisdown"
+
+        - alert: "ThanosStoreIsDown"
+          expr: 'absent(up{job=~".*thanos-store.*"} == 1)'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos component has disappeared."
+            description: "ThanosStore has disappeared. Prometheus target for the component cannot be discovered."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoreisdown"
