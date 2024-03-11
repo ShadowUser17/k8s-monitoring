@@ -18,6 +18,7 @@ spec:
           annotations:
             summary: "Resource: {{ $labels.name }} has misconfigurations!"
             description: "Resource: {{ $labels.name }} has misconfigurations: {{ $value | humanize }}"
+            runbook_url: ""
 
         - alert: "Image contains secrets"
           expr: 'sum(trivy_image_exposedsecrets) by(image_repository, image_tag) > 0'
@@ -27,6 +28,7 @@ spec:
           annotations:
             summary: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} contains secrets!"
             description: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} contains secrets: {{ $value | humanize }}"
+            runbook_url: ""
 
         - alert: "Image contains critical vulnerabilities"
           expr: 'sum(trivy_image_vulnerabilities{severity="Critical"}) by(image_repository, image_tag) > 0'
@@ -36,6 +38,7 @@ spec:
           annotations:
             summary: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} has critical vulnerabilities!"
             description: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} has vulnerabilities: {{ $value | humanize }}"
+            runbook_url: ""
 
         - alert: "Image contains high vulnerabilities"
           expr: 'sum(trivy_image_vulnerabilities{severity="High"}) by(image_repository, image_tag) > 0'
@@ -45,6 +48,7 @@ spec:
           annotations:
             summary: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} has high vulnerabilities!"
             description: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} has vulnerabilities: {{ $value | humanize }}"
+            runbook_url: ""
 
         - alert: "Image contains medium vulnerabilities"
           expr: 'sum(trivy_image_vulnerabilities{severity="Medium"}) by(image_repository, image_tag) > 0'
@@ -54,3 +58,4 @@ spec:
           annotations:
             summary: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} has medium vulnerabilities!"
             description: "Image: {{ $labels.image_repository }}:{{ $labels.image_tag }} has vulnerabilities: {{ $value | humanize }}"
+            runbook_url: ""

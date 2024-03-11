@@ -18,6 +18,7 @@ spec:
           annotations:
             summary: "ArgoCD service not synced (instance {{ $labels.instance }})"
             description: "Service {{ $labels.project }}/{{ $labels.name }} run by ArgoCD is currently not in sync!"
+            runbook_url: ""
 
         - alert: "ArgocdServiceUnhealthy"
           expr: 'argocd_app_info{health_status!~"Healthy|Progressing", name!=""} != 0'
@@ -27,6 +28,7 @@ spec:
           annotations:
             summary: "ArgoCD service unhealthy (instance {{ $labels.instance }})"
             description: "Service {{ $labels.project }}/{{ $labels.name }} run by ArgoCD is currently not healthy!"
+            runbook_url: ""
 
         - alert: "ArgocdAppAutoSyncDisabled"
           expr: 'argocd_app_info{autosync_enabled!="true", name!=""} > 0'
@@ -36,6 +38,7 @@ spec:
           annotations:
             summary: "ArgoCD service has auto-sync disabled (instance {{ $labels.instance }})"
             description: "Service {{ $labels.project }}/{{ $labels.name }} has auto-sync disabled!"
+            runbook_url: ""
 
         - alert: "ArgocdAppSyncFailed"
           expr: 'round(increase(argocd_app_sync_total{phase!="Succeeded", name!=""}[10m])) > 0'
@@ -45,6 +48,7 @@ spec:
           annotations:
             summary: "ArgoCD service has failed to sync (instance {{ $labels.instance }})"
             description: "Service {{ $labels.project }}/{{ $labels.name }} has failed to sync with the status {{ $labels.phase }} the past 10m."
+            runbook_url: ""
 
         - alert: "ArgocdNotificationDeliveryFailed"
           expr: 'round(increase(argocd_notifications_deliveries_total{succeeded!="true"}[10m])) > 0'
@@ -54,3 +58,4 @@ spec:
           annotations:
             summary: "ArgoCD notification delivery failed (instance {{ $labels.instance }})"
             description: "The notification job {{ $labels.job }} has failed to deliver to {{ $labels.service }} for the past 10m."
+            runbook_url: ""
