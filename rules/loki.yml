@@ -64,7 +64,7 @@ spec:
         - expr: 'sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, namespace, job, route)'
           record: 'cluster_namespace_job_route:loki_request_duration_seconds_count:sum_rate'
 
-    - name: "loki-alert.alerts"
+    - name: "loki-alert.rules"
       rules:
         - alert: "LokiRequestErrors"
           expr: '100 * sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[2m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[2m])) by(namespace, job, route) > 10'
@@ -72,8 +72,7 @@ spec:
           labels:
             severity: "critical"
           annotations:
-            message: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}% errors.'
-            summary: ""
+            summary: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}% errors.'
             description: ""
             runbook_url: ""
 
@@ -82,8 +81,7 @@ spec:
           labels:
             severity: "critical"
           annotations:
-            message: '{{ $labels.job }} is experiencing {{ printf "%.2f" $value }}% increase of panics.'
-            summary: ""
+            summary: '{{ $labels.job }} is experiencing {{ printf "%.2f" $value }}% increase of panics.'
             description: ""
             runbook_url: ""
 
@@ -93,8 +91,7 @@ spec:
           labels:
             severity: "critical"
           annotations:
-            message: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.'
-            summary: ""
+            summary: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.'
             description: ""
             runbook_url: ""
 
@@ -104,7 +101,6 @@ spec:
           labels:
             severity: "warning"
           annotations:
-            message: '{{ $labels.cluster }} {{ $labels.namespace }} has had {{ printf "%.0f" $value }} compactors running for more than 5m. Only one compactor should run at a time.'
-            summary: ""
+            summary: '{{ $labels.cluster }} {{ $labels.namespace }} has had {{ printf "%.0f" $value }} compactors running for more than 5m. Only one compactor should run at a time.'
             description: ""
             runbook_url: ""
