@@ -73,6 +73,8 @@ spec:
             severity: "critical"
           annotations:
             message: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}% errors.'
+            summary: ""
+            description: ""
             runbook_url: ""
 
         - alert: "PromtailRequestLatency"
@@ -82,6 +84,8 @@ spec:
             severity: "critical"
           annotations:
             message: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.'
+            summary: ""
+            description: ""
             runbook_url: ""
 
         - alert: "PromtailFileMissing"
@@ -91,4 +95,6 @@ spec:
             severity: "warning"
           annotations:
             message: '{{ $labels.instance }} {{ $labels.job }} {{ $labels.path }} matches the glob but is not being tailed.'
+            summary: ""
+            description: ""
             runbook_url: ""

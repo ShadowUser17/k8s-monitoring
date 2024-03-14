@@ -16,7 +16,7 @@ spec:
         - expr: 'histogram_quantile(0.50, sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job))'
           record: 'cluster_job:loki_request_duration_seconds:50quantile'
 
-        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by (cluster, job) / sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, job)'
+        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by(cluster, job) / sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, job)'
           record: 'cluster_job:loki_request_duration_seconds:avg'
 
         - expr: 'sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job)'
@@ -73,6 +73,8 @@ spec:
             severity: "critical"
           annotations:
             message: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}% errors.'
+            summary: ""
+            description: ""
             runbook_url: ""
 
         - alert: "LokiRequestPanics"
@@ -81,6 +83,8 @@ spec:
             severity: "critical"
           annotations:
             message: '{{ $labels.job }} is experiencing {{ printf "%.2f" $value }}% increase of panics.'
+            summary: ""
+            description: ""
             runbook_url: ""
 
         - alert: "LokiRequestLatency"
@@ -90,6 +94,8 @@ spec:
             severity: "critical"
           annotations:
             message: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.'
+            summary: ""
+            description: ""
             runbook_url: ""
 
         - alert: "LokiTooManyCompactorsRunning"
@@ -99,4 +105,6 @@ spec:
             severity: "warning"
           annotations:
             message: '{{ $labels.cluster }} {{ $labels.namespace }} has had {{ printf "%.0f" $value }} compactors running for more than 5m. Only one compactor should run at a time.'
+            summary: ""
+            description: ""
             runbook_url: ""
