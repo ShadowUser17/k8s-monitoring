@@ -1,0 +1,15 @@
+apiVersion: "monitoring.coreos.com/v1alpha1"
+kind: "ScrapeConfig"
+metadata:
+  name: "testing-node"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  honorLabels: true
+  scrapeInterval: "30s"
+  staticConfigs:
+    - labels:
+        job: "testing-node"
+      targets:
+        - "192.168.56.10:9100"
