@@ -1,4 +1,3 @@
-# https://monitoring.mixins.dev/loki/
 apiVersion: "monitoring.coreos.com/v1"
 kind: "PrometheusRule"
 metadata:
@@ -8,99 +7,34 @@ metadata:
     release: "prom-operator"
 spec:
   groups:
-    - name: "loki-record.rules"
-      rules:
-        - expr: 'histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job))'
-          record: 'cluster_job:loki_request_duration_seconds:99quantile'
-
-        - expr: 'histogram_quantile(0.50, sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job))'
-          record: 'cluster_job:loki_request_duration_seconds:50quantile'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by(cluster, job) / sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, job)'
-          record: 'cluster_job:loki_request_duration_seconds:avg'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job)'
-          record: 'cluster_job:loki_request_duration_seconds_bucket:sum_rate'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by(cluster, job)'
-          record: 'cluster_job:loki_request_duration_seconds_sum:sum_rate'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, job)'
-          record: 'cluster_job:loki_request_duration_seconds_count:sum_rate'
-
-        - expr: 'histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job, route))'
-          record: 'cluster_job_route:loki_request_duration_seconds:99quantile'
-
-        - expr: 'histogram_quantile(0.50, sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job, route))'
-          record: 'cluster_job_route:loki_request_duration_seconds:50quantile'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by(cluster, job, route) / sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, job, route)'
-          record: 'cluster_job_route:loki_request_duration_seconds:avg'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, job, route)'
-          record: 'cluster_job_route:loki_request_duration_seconds_bucket:sum_rate'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by(cluster, job, route)'
-          record: 'cluster_job_route:loki_request_duration_seconds_sum:sum_rate'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, job, route)'
-          record: 'cluster_job_route:loki_request_duration_seconds_count:sum_rate'
-
-        - expr: 'histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, namespace, job, route))'
-          record: 'cluster_namespace_job_route:loki_request_duration_seconds:99quantile'
-
-        - expr: 'histogram_quantile(0.50, sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, namespace, job, route))'
-          record: cluster_namespace_job_route:loki_request_duration_seconds:50quantile
-
-        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by(cluster, namespace, job, route) / sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, namespace, job, route)'
-          record: 'cluster_namespace_job_route:loki_request_duration_seconds:avg'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_bucket[1m])) by(le, cluster, namespace, job, route)'
-          record: 'cluster_namespace_job_route:loki_request_duration_seconds_bucket:sum_rate'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_sum[1m])) by(cluster, namespace, job, route)'
-          record: 'cluster_namespace_job_route:loki_request_duration_seconds_sum:sum_rate'
-
-        - expr: 'sum(rate(loki_request_duration_seconds_count[1m])) by(cluster, namespace, job, route)'
-          record: 'cluster_namespace_job_route:loki_request_duration_seconds_count:sum_rate'
-
     - name: "loki-alert.rules"
       rules:
         - alert: "LokiRequestErrors"
-          expr: '100 * sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[2m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[2m])) by(namespace, job, route) > 10'
+          expr: '100 * sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[5m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[5m])) by(namespace, job, route) > 10'
           for: "15m"
           labels:
-            severity: "critical"
+            severity: "warning"
           annotations:
-            summary: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}% errors.'
-            description: ""
+            summary: "Loki request errors (instance: {{ $labels.job }}/{{ $labels.route }})"
+            description: "Loki request errors of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}"
             runbook_url: ""
 
         - alert: "LokiRequestPanics"
-          expr: 'sum(increase(loki_panic_total[10m])) by(namespace, job) > 0'
-          labels:
-            severity: "warning"
-          annotations:
-            summary: '{{ $labels.job }} is experiencing {{ printf "%.2f" $value }}% increase of panics.'
-            description: ""
-            runbook_url: ""
-
-        - alert: "LokiRequestLatency"
-          expr: 'cluster_namespace_job_route:loki_request_duration_seconds:99quantile{route!~"(?i).*tail.*|/schedulerpb.SchedulerForQuerier/QuerierLoop"} > 1'
+          expr: 'sum(increase(loki_panic_total[15m])) by(namespace, job) > 0'
           for: "15m"
           labels:
             severity: "warning"
           annotations:
-            summary: '{{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.'
-            description: ""
+            summary: "Loki request panic (instance: {{ $labels.job }})"
+            description: "Loki request panic of {{ $labels.job }} is {{ printf \"%.2f\" $value }}"
             runbook_url: ""
 
-        - alert: "LokiTooManyCompactorsRunning"
-          expr: 'sum(loki_boltdb_shipper_compactor_running) by(namespace, cluster) > 1'
-          for: "5m"
+        - alert: "LokiRequestLatency"
+          expr: '(histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~"(?i).*tail.*"}[5m])) by(namespace, pod, route, le))) > 1'
+          for: "15m"
           labels:
             severity: "warning"
           annotations:
-            summary: '{{ $labels.cluster }} {{ $labels.namespace }} has had {{ printf "%.0f" $value }} compactors running for more than 5m. Only one compactor should run at a time.'
-            description: ""
+            summary: "Loki request latency (instance: {{ $labels.job }}/{{ $labels.route }})"
+            description: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
             runbook_url: ""
