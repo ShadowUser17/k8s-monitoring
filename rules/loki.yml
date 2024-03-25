@@ -10,31 +10,31 @@ spec:
     - name: "loki-alert.rules"
       rules:
         - alert: "LokiRequestErrors"
-          expr: '100 * sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[5m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[5m])) by(namespace, job, route) > 10'
+          expr: 'sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[2m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[2m])) by(namespace, job, route) * 100 > 10'
           for: "15m"
           labels:
             severity: "warning"
           annotations:
-            summary: "Loki request errors (instance: {{ $labels.job }}/{{ $labels.route }})"
-            description: "Loki request errors of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}"
-            runbook_url: ""
+            summary: "Loki request errors of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}"
+            description: "At least 10% of requests are responded by 5xx server errors."
+            runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequesterrors"
 
         - alert: "LokiRequestPanics"
-          expr: 'sum(increase(loki_panic_total[15m])) by(namespace, job) > 0'
+          expr: 'sum(increase(loki_panic_total[5m])) by(namespace, job) > 0'
           for: "15m"
           labels:
             severity: "warning"
           annotations:
-            summary: "Loki request panic (instance: {{ $labels.job }})"
-            description: "Loki request panic of {{ $labels.job }} is {{ printf \"%.2f\" $value }}"
-            runbook_url: ""
+            summary: "Loki request panic of {{ $labels.job }} is {{ printf \"%.2f\" $value }}"
+            description: ""
+            runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestpanics"
 
         - alert: "LokiRequestLatency"
-          expr: '(histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~"(?i).*tail.*"}[5m])) by(namespace, pod, route, le))) > 1'
+          expr: 'histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~"(?i).*tail.*"}[2m])) by(namespace, job, route, le)) > 1'
           for: "15m"
           labels:
             severity: "warning"
           annotations:
-            summary: "Loki request latency (instance: {{ $labels.job }}/{{ $labels.route }})"
-            description: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
-            runbook_url: ""
+            summary: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
+            description: "The 99th percentile is experiencing high latency (higher than 1 second)."
+            runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestlatency"
