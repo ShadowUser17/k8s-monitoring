@@ -38,3 +38,13 @@ spec:
             summary: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
             description: "The 99th percentile is experiencing high latency (higher than 1 second)."
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestlatency"
+
+        - alert: "LokiTenantRateLimit"
+          expr: 'sum(sum_over_time(rate(loki_discarded_samples_total[2m])[30m:1m])) by(namespace, tenant, reason) > 100'
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Loki discarded logs per {{ $labels.tenant }} and {{ $labels.reason }} over the last 30 minutes is above 100."
+            description: "A tenant is experiencing rate limiting. The number of discarded logs per tenant and reason over the last 30 minutes is above 100."
+            runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokitenantratelimitwarning"
