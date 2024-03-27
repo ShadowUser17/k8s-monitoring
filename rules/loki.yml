@@ -10,7 +10,7 @@ spec:
     - name: "loki-alert.rules"
       rules:
         - alert: "LokiRequestErrors"
-          expr: 'sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[2m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[2m])) by(namespace, job, route) * 100 > 10'
+          expr: 'sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[5m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[5m])) by(namespace, job, route) * 100 > 10'
           for: "15m"
           labels:
             severity: "warning"
@@ -30,13 +30,13 @@ spec:
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestpanics"
 
         - alert: "LokiRequestLatency"
-          expr: 'histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~"(?i).*tail.*"}[2m])) by(namespace, job, route, le)) > 1'
+          expr: 'histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~".*/QuerierLoop"}[5m])) by(namespace, job, route, le)) > 10'
           for: "15m"
           labels:
             severity: "warning"
           annotations:
             summary: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
-            description: "The 99th percentile is experiencing high latency (higher than 1 second)."
+            description: "The 99th percentile is experiencing high latency (higher than 10 second)."
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestlatency"
 
         - alert: "LokiTenantRateLimit"
