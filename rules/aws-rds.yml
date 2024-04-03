@@ -40,12 +40,12 @@ spec:
             runbook_url: ""
 
         - alert: "AwsRdsDatabaseAmountOfFreeMemoryIsLow"
-          expr: 'min_over_time(aws_rds_freeable_memory_average[10m]) / (1024 * 1024 * 1024) < 2'
+          expr: 'min_over_time(aws_rds_freeable_memory_average[10m]) / (1024 * 1024 * 1024) < 1'
           for: "5m"
           labels:
             severity: "error"
           annotations:
-            summary: "The database amount of free memory is less than 2GB"
+            summary: "The database amount of free memory is less than 1GB"
             description: 'The databese `{{ $labels.dbinstance_identifier }}` free memory is `{{ .Value | humanize }}`'
             runbook_url: ""
 
@@ -80,22 +80,22 @@ spec:
             runbook_url: ""
 
         - alert: "AwsRdsHighDatabaseConnections"
-          expr: 'max_over_time(aws_rds_database_connections_average[10m]) > 250'
+          expr: 'max_over_time(aws_rds_database_connections_average[10m]) > 320'
           for: "15m"
           labels:
             severity: "warning"
           annotations:
-            summary: "The databese has more than 250 connections"
+            summary: "The databese has more than 320 connections"
             description: 'The databese `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsHighDatabaseConnections"
-          expr: 'max_over_time(aws_rds_database_connections_average[10m]) > 350'
+          expr: 'max_over_time(aws_rds_database_connections_average[10m]) > 500'
           for: "15m"
           labels:
             severity: "error"
           annotations:
-            summary: "The databese has more than 350 connections"
+            summary: "The databese has more than 500 connections"
             description: 'The databese `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
             runbook_url: ""
 
