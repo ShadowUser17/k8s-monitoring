@@ -1,0 +1,130 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "aws-rds-rules"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  groups:
+    - name: "aws-rds-alert.rules"
+      rules:
+        - alert: "AwsRdsHighDatabaseCpuUtilization"
+          expr: 'max_over_time(aws_rds_cpuutilization_average[10m]) > 75'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The database CPU usage is more than 75%"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` CPU usage is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsHighDatabaseCpuUtilization"
+          expr: 'max_over_time(aws_rds_cpuutilization_average[10m]) > 85'
+          for: "5m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: "The database CPU usage is more than 85%"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` CPU usage is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsDatabaseAmountOfFreeMemoryIsLow"
+          expr: 'min_over_time(aws_rds_freeable_memory_average[10m]) / (1024 * 1024 * 1024) < 2'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The database amount of free memory is less than 2GB"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` free memory is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsDatabaseAmountOfFreeMemoryIsLow"
+          expr: 'min_over_time(aws_rds_freeable_memory_average[10m]) / (1024 * 1024 * 1024) < 2'
+          for: "5m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: "The database amount of free memory is less than 2GB"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` free memory is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsFreeStorageSizeIsLow"
+          expr: 'min_over_time(aws_rds_free_storage_space_average[10m]) / (1024 * 1024 * 1024) < 85'
+          for: "30m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The database free storage size is less than 85GB"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` storage size is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsFreeStorageSizeIsLow"
+          expr: 'min_over_time(aws_rds_free_storage_space_average[10m]) / (1024 * 1024 * 1024) < 50'
+          for: "30m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "The database free storage size is less than 50GB"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` storage size is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsDatabaseSwapUsageIsHigh"
+          expr: 'max_over_time(aws_rds_swap_usage_average[10m]) / (1024 * 1024) > 25'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The database swap usage is more than 25MB"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` swap usage is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsHighDatabaseConnections"
+          expr: 'max_over_time(aws_rds_database_connections_average[10m]) > 250'
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The databese has more than 250 connections"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsHighDatabaseConnections"
+          expr: 'max_over_time(aws_rds_database_connections_average[10m]) > 350'
+          for: "15m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: "The databese has more than 350 connections"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsDatabaseReadLatencyIsHigh"
+          expr: 'max_over_time(aws_rds_read_latency_average[10m]) > 3'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The database read latency is more than 3s"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` read latency is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsDatabaseWriteLatencyIsHigh"
+          expr: 'max_over_time(aws_rds_write_latency_average[10m]) > 3'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The database write latency is more than 3s"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` write latency is `{{ .Value | humanize }}`'
+            runbook_url: ""
+
+        - alert: "AwsRdsDatabaseBurstBalanceLessThan"
+          expr: 'max_over_time(aws_rds_burst_balance_average[10m]) < 50'
+          for: "1h"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The database burst balance less than 50%"
+            description: 'The databese `{{ $labels.dbinstance_identifier }}` burst balance is `{{ .Value | humanize }}`'
+            runbook_url: ""
