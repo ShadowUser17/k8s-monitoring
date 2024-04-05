@@ -1,3 +1,4 @@
+# https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-metrics.html
 apiVersion: "monitoring.coreos.com/v1"
 kind: "PrometheusRule"
 metadata:
