@@ -12,7 +12,7 @@ spec:
   endpoints:
     - port: "http"
       path: "/snmp"
-      interval: "30s"
+      interval: "1m"
       honorLabels: true
       scrapeTimeout: "10s"
       params:
