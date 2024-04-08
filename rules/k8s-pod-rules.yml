@@ -1,0 +1,14 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "custom-pod-rules"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  groups:
+    - name: "custom-pod-record.rules"
+      rules: []
+
+    - name: "custom-pod-alert.rules"
+      rules: []
