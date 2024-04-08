@@ -8,7 +8,18 @@ metadata:
 spec:
   groups:
     - name: "custom-node-record.rules"
-      rules: []
+      rules:
+        - expr: |
+            sum(kube_node_labels * on(node) group_left kube_node_created) by(
+                node,
+                label_eks_amazonaws_com_capacity_type,
+                label_eks_amazonaws_com_nodegroup,
+                label_eks_amazonaws_com_nodegroup_image,
+                label_node_kubernetes_io_instance_type,
+                label_topology_kubernetes_io_region,
+                label_topology_kubernetes_io_zone
+            )
+          record: "kube_node_joined_info"
 
-    - name: "custom-node-alert.rules"
-      rules: []
+    # - name: "custom-node-alert.rules"
+    #   rules: []

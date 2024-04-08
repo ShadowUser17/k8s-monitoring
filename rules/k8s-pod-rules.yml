@@ -8,7 +8,12 @@ metadata:
 spec:
   groups:
     - name: "custom-pod-record.rules"
-      rules: []
+      rules:
+        - expr: 'sum(kube_pod_info * on(namespace, pod) group_left kube_pod_created) by(node, namespace, pod)'
+          record: "kube_pod_joined_info"
 
-    - name: "custom-pod-alert.rules"
-      rules: []
+        - expr: 'sum(kube_pod_container_status_last_terminated_reason * on(namespace, pod) group_left kube_pod_info) by(node, namespace, pod, reason)'
+          record: "kube_pod_terminated_info"
+
+    # - name: "custom-pod-alert.rules"
+    #   rules: []
