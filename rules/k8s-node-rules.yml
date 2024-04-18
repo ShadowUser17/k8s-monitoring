@@ -19,7 +19,7 @@ spec:
                 label_topology_kubernetes_io_region,
                 label_topology_kubernetes_io_zone
             )
-          record: "kube_node_joined_info"
+          record: "custom_node_info"
 
     # - name: "custom-node-alert.rules"
     #   rules: []
