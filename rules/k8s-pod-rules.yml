@@ -15,8 +15,10 @@ spec:
     - name: "custom-pod-alert.rules"
       rules:
         - alert: "KubePodOomKilled"
-          expr: 'kube_pod_info * on(namespace, pod) group_left kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0'
-          for: "5m"
+          expr: |
+            increase(kube_pod_container_status_restarts_total[5m]) *
+            on (namespace, pod) group_left kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0
+          for: "1m"
           labels:
             severity: "warning"
           annotations:
