@@ -12,5 +12,14 @@ spec:
         - expr: 'sum(kube_pod_info * on(namespace, pod) group_left kube_pod_created) by(node, namespace, pod)'
           record: "custom_pod_info"
 
-    # - name: "custom-pod-alert.rules"
-    #   rules: []
+    - name: "custom-pod-alert.rules"
+      rules:
+        - alert: "KubePodOomKilled"
+          expr: 'kube_pod_info * on(namespace, pod) group_left kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The {{ $labels.namespace }}/{{ $labels.pod }} terminated with OOMKilled reason."
+            description: "The {{ $labels.namespace }}/{{ $labels.pod }} terminated on {{ $labels.node }}"
+            runbook_url: ""
