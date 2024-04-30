@@ -21,5 +21,30 @@ spec:
             )
           record: "custom_node_info"
 
-    # - name: "custom-node-alert.rules"
-    #   rules: []
+    - name: "custom-node-alert.rules"
+      rules:
+        - alert: "KubeNodeMemoryPressure"
+          expr: |
+            kube_node_status_condition{condition="MemoryPressure", status="true"} == 1
+          for: "1m"
+          labels:
+            env: "test"
+            team: "devops"
+            severity: "critical"
+          annotations:
+            summary: "Kubernetes memory pressure (instance {{ $labels.node }})"
+            description: "Kubernetes node {{ $labels.node }} has MemoryPressure condition."
+            runbook_url: ""
+
+        - alert: "KubeNodeDiskPressure"
+          expr: |
+            kube_node_status_condition{condition="DiskPressure", status="true"} == 1
+          for: "1m"
+          labels:
+            env: "test"
+            team: "devops"
+            severity: "critical"
+          annotations:
+            summary: "Kubernetes disk pressure (instance {{ $labels.node }})"
+            description: "Kubernetes node {{ $labels.node }} has DiskPressure condition."
+            runbook_url: ""
