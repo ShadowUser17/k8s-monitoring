@@ -9,22 +9,45 @@ spec:
   groups:
     - name: "promtail-alert.rules"
       rules:
-        - alert: "PromtailRequestsErrors"
-          expr: '100 * sum(rate(promtail_request_duration_seconds_count{status_code=~"5..|failed"}[5m])) by(namespace, pod, route) / sum(rate(promtail_request_duration_seconds_count[5m])) by(namespace, pod, route) > 10'
-          for: "15m"
+        - alert: "PromtailDroppedEntries"
+          expr: 'sum(rate(promtail_dropped_entries_total[2m])) by(namespace, pod) > 0'
+          for: "5m"
           labels:
             severity: "critical"
+          annotations:
+            summary: "Promtail (instance {{ $labels.namespace }}/{{ $labels.pod }}) drops log items."
+            description: "The {{ $labels.namespace }}/{{ $labels.pod }} drops log items {{ $value }}"
+            runbook_url: ""
+
+        - alert: "PromtailRequestsErrors"
+          expr: |
+            100 * sum(rate(promtail_request_duration_seconds_count{status_code=~"5..|failed"}[5m])) by(namespace, pod, route) /
+            sum(rate(promtail_request_duration_seconds_count[5m])) by(namespace, pod, route) > 10
+          for: "5m"
+          labels:
+            severity: "error"
           annotations:
             summary: "Promtail request errors (instance {{ $labels.namespace }}/{{ $labels.pod }})"
             description: "The {{ $labels.namespace }}/{{ $labels.pod }} {{ $labels.route }} is experiencing {{ printf \"%.2f\" $value }}% errors."
             runbook_url: ""
 
         - alert: "PromtailRequestLatency"
-          expr: 'histogram_quantile(0.99, sum(rate(promtail_request_duration_seconds_bucket[5m])) by(namespace, pod, route, le)) > 1'
-          for: "15m"
+          expr: |
+            histogram_quantile(0.99, sum(rate(promtail_request_duration_seconds_bucket[5m])) by(namespace, pod, route, le)) > 1
+          for: "5m"
           labels:
-            severity: "critical"
+            severity: "warning"
           annotations:
             summary: "Promtail request latency (instance {{ $labels.namespace }}/{{ $labels.pod }})"
             description: "The {{ $labels.namespace }}/{{ $labels.pod }} {{ $labels.route }} is experiencing {{ printf \"%.2f\" $value }}s 99th percentile latency."
+            runbook_url: ""
+
+        - alert: "PromtailFileMissing"
+          expr: 'promtail_file_bytes_total unless promtail_read_bytes_total'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "{{ $labels.instance }} {{ $labels.job }} {{ $labels.path }} matches the glob but is not being tailed."
+            description: "{{ $labels.instance }} {{ $labels.job }} {{ $labels.path }} matches the glob but is not being tailed."
             runbook_url: ""
