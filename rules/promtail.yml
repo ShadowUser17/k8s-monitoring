@@ -10,20 +10,20 @@ spec:
     - name: "promtail-alert.rules"
       rules:
         - alert: "PromtailDroppedEntries"
-          expr: 'sum(rate(promtail_dropped_entries_total[2m])) by(namespace, pod) > 0'
-          for: "5m"
+          expr: 'sum(rate(promtail_dropped_entries_total[5m])) by(namespace, pod, reason) > 0'
+          for: "1m"
           labels:
             severity: "critical"
           annotations:
             summary: "Promtail (instance {{ $labels.namespace }}/{{ $labels.pod }}) drops log items."
-            description: "The {{ $labels.namespace }}/{{ $labels.pod }} drops log items {{ $value }}"
+            description: "The {{ $labels.namespace }}/{{ $labels.pod }} drops log items reason {{ $labels.reason }}"
             runbook_url: ""
 
         - alert: "PromtailRequestsErrors"
           expr: |
             100 * sum(rate(promtail_request_duration_seconds_count{status_code=~"5..|failed"}[5m])) by(namespace, pod, route) /
             sum(rate(promtail_request_duration_seconds_count[5m])) by(namespace, pod, route) > 10
-          for: "5m"
+          for: "1m"
           labels:
             severity: "error"
           annotations:
