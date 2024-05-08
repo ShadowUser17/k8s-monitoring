@@ -275,3 +275,15 @@ spec:
             description: |
               {{ printf "%.1f" $value }}% minimum errors while sending alerts from Prometheus {{ $labels.namespace }}/{{ $labels.pod }} to any Alertmanager.
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheuserrorsendingalertstoanyalertmanager'
+
+        - alert: "PrometheusTargetDown"
+          expr: |
+            100 * (count(up == 0) by (cluster, job, namespace, service) / count(up) by (cluster, job, namespace, service)) > 10
+          for: "10m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'One or more targets are unreachable.'
+            description: |
+              {{ printf "%.4g" $value }}% of the {{ $labels.job }}/{{ $labels.service }} targets in {{ $labels.namespace }} namespace are down.
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/general/targetdown'
