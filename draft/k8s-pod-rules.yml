@@ -1,0 +1,45 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "k8s-pod-rules"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  groups:
+    - name: "pod-record.rules"
+      rules:
+        - expr: |
+            max by (cluster, namespace, workload, pod) (
+                label_replace(
+                    label_replace(
+                        kube_pod_owner{job="kube-state-metrics", owner_kind="ReplicaSet"}, "replicaset", "$1", "owner_name", "(.*)") * on (replicaset, namespace) group_left(owner_name)
+                topk by (replicaset, namespace) (1, max by (replicaset, namespace, owner_name) (kube_replicaset_owner{job="kube-state-metrics"})), "workload", "$1", "owner_name", "(.*)")
+            )
+          record: 'namespace_workload_pod:kube_pod_owner:relabel'
+          labels:
+            workload_type: "deployment"
+
+        - expr: |
+            max by (cluster, namespace, workload, pod) (
+                label_replace(kube_pod_owner{job="kube-state-metrics", owner_kind="DaemonSet"}, "workload", "$1", "owner_name", "(.*)")
+            )
+          record: 'namespace_workload_pod:kube_pod_owner:relabel'
+          labels:
+            workload_type: "daemonset"
+
+        - expr: |
+            max by (cluster, namespace, workload, pod) (
+                label_replace(kube_pod_owner{job="kube-state-metrics", owner_kind="StatefulSet"}, "workload", "$1", "owner_name", "(.*)")
+            )
+          record: 'namespace_workload_pod:kube_pod_owner:relabel'
+          labels:
+            workload_type: "statefulset"
+
+        - expr: |
+            max by (cluster, namespace, workload, pod) (
+                label_replace(kube_pod_owner{job="kube-state-metrics", owner_kind="Job"}, "workload", "$1", "owner_name", "(.*)")
+            )
+          record: 'namespace_workload_pod:kube_pod_owner:relabel'
+          labels:
+            workload_type: "job"
