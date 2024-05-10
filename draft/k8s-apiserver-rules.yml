@@ -99,5 +99,23 @@ spec:
         - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))'
           record: 'code_verb:apiserver_request_total:increase1h'
 
+        - expr: |
+            histogram_quantile(0.99, sum by (cluster, le, resource) (
+                rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[5m])
+            )) > 0
+          record: 'cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile'
+          labels:
+            verb: "read"
+            quantile: '0.99'
+
+        - expr: |
+            histogram_quantile(0.99, sum by (cluster, le, resource) (
+                rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[5m])
+            )) > 0
+          record: 'cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile'
+          labels:
+            verb: "write"
+            quantile: '0.99'
+
     # - name: "apiserver-alert.rules"
     #   rules: []
