@@ -349,6 +349,21 @@ spec:
             description: 'The API server is burning too much error budget.'
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn'
 
+        - alert: "KubeClientErrors"
+          expr: |
+            (
+                sum(rate(rest_client_requests_total{job="apiserver",code=~"5.."}[5m])) by (cluster, instance, job, namespace)
+                / sum(rate(rest_client_requests_total{job="apiserver"}[5m])) by (cluster, instance, job, namespace)
+            ) > 0.01
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'Kubernetes API server client is experiencing errors.'
+            description: |
+              Kubernetes API server client {{ $labels.job }}/{{ $labels.instance }} is experiencing {{ $value | humanizePercentage }} errors.
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclienterrors'
+
         - alert: "KubeClientCertificateExpiration"
           expr: |
             apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and on (job)
