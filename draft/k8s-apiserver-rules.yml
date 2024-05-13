@@ -299,5 +299,125 @@ spec:
           labels:
             verb: "write"
 
-    # - name: "apiserver-alert.rules"
-    #   rules: []
+    - name: "apiserver-alert.rules"
+      rules:
+        - alert: "KubeAPIErrorBudgetBurn"
+          expr: 'sum(apiserver_request:burnrate1h) > (14.40 * 0.01000) and sum(apiserver_request:burnrate5m) > (14.40 * 0.01000)'
+          for: "2m"
+          labels:
+            long: "1h"
+            short: "5m"
+            severity: "critical"
+          annotations:
+            summary: 'The API server is burning too much error budget.'
+            description: 'The API server is burning too much error budget.'
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn'
+
+        - alert: "KubeAPIErrorBudgetBurn"
+          expr: 'sum(apiserver_request:burnrate6h) > (6.00 * 0.01000) and sum(apiserver_request:burnrate30m) > (6.00 * 0.01000)'
+          for: "15m"
+          labels:
+            long: "6h"
+            short: "30m"
+            severity: "critical"
+          annotations:
+            summary: 'The API server is burning too much error budget.'
+            description: 'The API server is burning too much error budget.'
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn'
+
+        - alert: "KubeAPIErrorBudgetBurn"
+          expr: 'sum(apiserver_request:burnrate1d) > (3.00 * 0.01000) and sum(apiserver_request:burnrate2h) > (3.00 * 0.01000)'
+          for: "1h"
+          labels:
+            long: "1d"
+            short: "2h"
+            severity: "warning"
+          annotations:
+            summary: 'The API server is burning too much error budget.'
+            description: 'The API server is burning too much error budget.'
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn'
+
+        - alert: "KubeAPIErrorBudgetBurn"
+          expr: 'sum(apiserver_request:burnrate3d) > (1.00 * 0.01000) and sum(apiserver_request:burnrate6h) > (1.00 * 0.01000)'
+          for: "3h"
+          labels:
+            long: "3d"
+            short: "6h"
+            severity: "warning"
+          annotations:
+            summary: 'The API server is burning too much error budget.'
+            description: 'The API server is burning too much error budget.'
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn'
+
+        - alert: "KubeClientCertificateExpiration"
+          expr: |
+            apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and on (job)
+            histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 604800
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'Client certificate is about to expire.'
+            description: 'A client certificate used to authenticate to kubernetes apiserver is expiring in less than 7.0 days.'
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclientcertificateexpiration'
+
+        - alert: "KubeClientCertificateExpiration"
+          expr: |
+            apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and on (job)
+            histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 86400
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: 'Client certificate is about to expire.'
+            description: 'A client certificate used to authenticate to kubernetes apiserver is expiring in less than 24.0 hours.'
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclientcertificateexpiration'
+
+        - alert: "KubeAggregatedAPIErrors"
+          expr: 'sum by (name, namespace, cluster)(increase(aggregator_unavailable_apiservice_total{job="apiserver"}[10m])) > 4'
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'Kubernetes aggregated API has reported errors.'
+            description: |
+              Kubernetes aggregated API {{ $labels.name }}/{{ $labels.namespace }} has reported errors.
+              It has appeared unavailable {{ $value | humanize }} times averaged over the past 10m.
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeaggregatedapierrors'
+
+        - alert: "KubeAggregatedAPIDown"
+          expr: |
+            (1 - max by (name, namespace, cluster)(avg_over_time(aggregator_unavailable_apiservice{job="apiserver"}[10m]))) * 100 < 85
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'Kubernetes aggregated API is down.'
+            description: |
+              Kubernetes aggregated API {{ $labels.name }}/{{ $labels.namespace }} has been only {{ $value | humanize }}% available over the last 10m.
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeaggregatedapidown'
+
+        - alert: "KubeAPIDown"
+          expr: 'absent(up{job="apiserver"} == 1)'
+          for: "15m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: 'Target disappeared from Prometheus target discovery.'
+            description: 'KubeAPI has disappeared from Prometheus target discovery.'
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapidown'
+
+        - alert: "KubeAPITerminatedRequests"
+          expr: |
+            sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m])) / (
+                sum(rate(apiserver_request_total{job="apiserver"}[10m]))
+                + sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m]))
+            ) > 0.20
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: |
+              The kubernetes apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.
+            description: |
+              The kubernetes apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.
+            runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapiterminatedrequests'
