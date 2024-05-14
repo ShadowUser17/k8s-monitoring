@@ -332,3 +332,16 @@ spec:
             description: |
               The persistent volume {{ $labels.persistentvolume }} {{ with $labels.cluster -}} on Cluster {{ . }} {{- end }} has status {{ $labels.phase }}.
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeerrors'
+
+        - alert: "KubePersistentVolumeAvailableSpace"
+          expr: |
+            sum(
+              (kubelet_volume_stats_available_bytes * 100) / kubelet_volume_stats_capacity_bytes
+            ) by(namespace, node, persistentvolumeclaim) < 50
+          for: "1m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 50% of available space."
+            description: "The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 50% of available space."
+            runbook_url: ""

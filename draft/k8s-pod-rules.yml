@@ -267,3 +267,15 @@ spec:
             description: |
               Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than 15 minutes.
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready'
+
+        - alert: "KubePodOomKilled"
+          expr: |
+            increase(kube_pod_container_status_restarts_total[5m]) * on (namespace, pod) group_left
+            kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0
+          for: "1m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "The {{ $labels.namespace }}/{{ $labels.pod }} terminated with OOMKilled reason."
+            description: "The {{ $labels.namespace }}/{{ $labels.pod }} terminated on {{ $labels.node }}"
+            runbook_url: ""

@@ -40,13 +40,13 @@ spec:
       rules:
         - alert: "KubeNodeNotReady"
           expr: |
-            kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"} == 0
-          for: "15m"
+            kube_node_status_condition{condition!="Ready", status="true"} == 1
+          for: "5m"
           labels:
-            severity: "warning"
+            severity: "critical"
           annotations:
-            summary: 'Node is not ready.'
-            description: '{{ $labels.node }} has been unready for more than 15 minutes.'
+            summary: "The node {{ $labels.node }} has {{ $labels.condition }} condition."
+            description: "The node {{ $labels.node }} has {{ $labels.condition }} condition."
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubenodenotready'
 
         - alert: "KubeNodeUnreachable"
