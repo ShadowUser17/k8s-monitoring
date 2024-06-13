@@ -270,12 +270,12 @@ spec:
 
         - alert: "KubePodOomKilled"
           expr: |
-            increase(kube_pod_container_status_restarts_total[5m]) * on (namespace, pod) group_left
-            kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0
+            increase(kube_pod_container_status_restarts_total[5m]) *
+            on(namespace, pod) group_left kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0
           for: "1m"
           labels:
             severity: "warning"
           annotations:
             summary: "The {{ $labels.namespace }}/{{ $labels.pod }} terminated with OOMKilled reason."
-            description: "The {{ $labels.namespace }}/{{ $labels.pod }} terminated on {{ $labels.node }}"
+            description: "The {{ $labels.namespace }}/{{ $labels.pod }} terminated with out-of-memory reason."
             runbook_url: ""
