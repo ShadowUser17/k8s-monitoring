@@ -252,7 +252,7 @@ spec:
             severity: "critical"
           annotations:
             summary: 'PersistentVolume is filling up.'
-            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value | humanize }}% of available space.'
+            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value }}% of available space.'
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup'
 
         - alert: "KubePersistentVolumeFillingUp"
@@ -265,7 +265,7 @@ spec:
             severity: "warning"
           annotations:
             summary: 'PersistentVolume is filling up.'
-            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value | humanize }}% of available space.'
+            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value }}% of available space.'
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup'
 
         - alert: "KubePersistentVolumeInodesFillingUp"
@@ -278,7 +278,7 @@ spec:
             severity: "critical"
           annotations:
             summary: 'PersistentVolumeInodes are filling up.'
-            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value | humanize }}% of free inodes.'
+            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value }}% of free inodes.'
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeinodesfillingup'
 
         - alert: "KubePersistentVolumeInodesFillingUp"
@@ -291,7 +291,7 @@ spec:
             severity: "warning"
           annotations:
             summary: 'PersistentVolumeInodes are filling up.'
-            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value | humanize }}% of free inodes.'
+            description: 'The {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has {{ $value }}% of free inodes.'
             runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeinodesfillingup'
 
         - alert: "KubePersistentVolumeErrors"
