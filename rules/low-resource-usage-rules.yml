@@ -1,0 +1,66 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "low-resource-usage-rules"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  groups:
+    - name: "resource-usage-record.rules"
+      rules:
+        - expr: |
+            max(
+              sum(kube_pod_info) by(namespace, pod, created_by_name)
+              * on(namespace, pod) group_left max(kube_pod_container_resource_limits{resource="cpu"}) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_cpu_limits"
+
+        - expr: |
+            max(
+              sum(kube_pod_info) by(namespace, pod, created_by_name)
+              * on(namespace, pod) group_left max(kube_pod_container_resource_limits{resource="memory"}) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_memory_limits"
+
+        - expr: |
+            max(
+              sum(kube_pod_info) by(namespace, pod, created_by_name)
+              * on(namespace, pod) group_left max(kube_pod_container_resource_limits{resource="ephemeral_storage"}) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_storage_limits"
+
+        - expr: |
+            max(
+              sum(kube_pod_info) by(namespace, pod, created_by_name)
+              * on(namespace, pod) group_left max(kube_pod_container_resource_requests{resource="cpu"}) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_cpu_requests"
+
+        - expr: |
+            max(
+              sum(kube_pod_info) by(namespace, pod, created_by_name)
+              * on(namespace, pod) group_left max(kube_pod_container_resource_requests{resource="memory"}) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_memory_requests"
+
+        - expr: |
+            max(
+              sum(kube_pod_info) by(namespace, pod, created_by_name)
+              * on(namespace, pod) group_left max(kube_pod_container_resource_requests{resource="ephemeral_storage"}) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_storage_requests"
+
+        - expr: |
+            avg(
+                sum(kube_pod_info) by(namespace, pod, created_by_name) * on(namespace, pod) group_left
+                max(irate(container_cpu_usage_seconds_total{container!=""}[5m])) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_cpu_usage"
+
+        - expr: |
+            avg(
+                sum(kube_pod_info) by(namespace, pod, created_by_name) * on(namespace, pod) group_left
+                max(container_memory_working_set_bytes{container!=""}) by(namespace, pod)
+            ) by(namespace, created_by_name)
+          record: "kube_workload_memory_usage"
