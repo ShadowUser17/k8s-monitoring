@@ -17,7 +17,7 @@ spec:
             severity: "warning"
           annotations:
             summary: "The database CPU usage is more than 75%"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` CPU usage is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` CPU usage is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsHighDatabaseCpuUtilization"
@@ -27,7 +27,7 @@ spec:
             severity: "error"
           annotations:
             summary: "The database CPU usage is more than 85%"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` CPU usage is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` CPU usage is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsDatabaseAmountOfFreeMemoryIsLow"
@@ -37,7 +37,7 @@ spec:
             severity: "warning"
           annotations:
             summary: "The database amount of free memory is less than 2GB"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` free memory is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` free memory is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsDatabaseAmountOfFreeMemoryIsLow"
@@ -47,7 +47,7 @@ spec:
             severity: "error"
           annotations:
             summary: "The database amount of free memory is less than 1GB"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` free memory is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` free memory is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsFreeStorageSizeIsLow"
@@ -57,7 +57,7 @@ spec:
             severity: "warning"
           annotations:
             summary: "The database free storage size is less than 85GB"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` storage size is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` storage size is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsFreeStorageSizeIsLow"
@@ -67,7 +67,7 @@ spec:
             severity: "critical"
           annotations:
             summary: "The database free storage size is less than 50GB"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` storage size is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` storage size is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsDatabaseSwapUsageIsHigh"
@@ -77,7 +77,7 @@ spec:
             severity: "warning"
           annotations:
             summary: "The database swap usage is more than 25MB"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` swap usage is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` swap usage is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsHighDatabaseConnections"
@@ -86,8 +86,8 @@ spec:
           labels:
             severity: "warning"
           annotations:
-            summary: "The databese has more than 320 connections"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
+            summary: "The database has more than 320 connections"
+            description: 'The database `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsHighDatabaseConnections"
@@ -96,8 +96,8 @@ spec:
           labels:
             severity: "error"
           annotations:
-            summary: "The databese has more than 500 connections"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
+            summary: "The database has more than 500 connections"
+            description: 'The database `{{ $labels.dbinstance_identifier }}` has connections `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsDatabaseReadLatencyIsHigh"
@@ -107,7 +107,7 @@ spec:
             severity: "warning"
           annotations:
             summary: "The database read latency is more than 3s"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` read latency is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` read latency is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsDatabaseWriteLatencyIsHigh"
@@ -117,7 +117,7 @@ spec:
             severity: "warning"
           annotations:
             summary: "The database write latency is more than 3s"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` write latency is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` write latency is `{{ .Value | humanize }}`'
             runbook_url: ""
 
         - alert: "AwsRdsDatabaseBurstBalanceLessThan"
@@ -127,5 +127,5 @@ spec:
             severity: "warning"
           annotations:
             summary: "The database burst balance less than 50%"
-            description: 'The databese `{{ $labels.dbinstance_identifier }}` burst balance is `{{ .Value | humanize }}`'
+            description: 'The database `{{ $labels.dbinstance_identifier }}` burst balance is `{{ .Value | humanize }}`'
             runbook_url: ""
