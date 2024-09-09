@@ -38,3 +38,13 @@ spec:
             summary: "Nginx high latency (instance {{ $labels.instance }})"
             description: "Nginx P99 latency is higher than 5 seconds.\nValue: {{ $value }}\nLabels: {{ $labels }}"
             runbook_url: ""
+
+        - alert: "NginxCertExpirySoon"
+          expr: 'sum(floor((nginx_ingress_controller_ssl_expire_time_seconds - time()) / 60 / 60 / 24)) by(host) < 20'
+          for: "1h"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'The cert of {{ $labels.host }} expires coming soon'
+            description: 'The cert of {{ $labels.host }} expire after {{ $value | humanize }} days'
+            runbook_url: ""
