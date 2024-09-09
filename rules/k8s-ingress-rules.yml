@@ -1,0 +1,40 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "ingress-rules"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  groups:
+    - name: "ingress.rules"
+      rules:
+        - alert: "NginxHighHttp4xxErrorRate"
+          expr: 'sum(rate(nginx_ingress_controller_requests{status=~"^4.."}[5m])) / sum(rate(nginx_ingress_controller_requests[5m])) * 100 > 5'
+          for: "5m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: 'Nginx high HTTP 4xx error rate (instance {{ $labels.instance }})'
+            description: "Too many HTTP requests with status 4xx (> 5%).\nValue: {{ $value }}\nLabels: {{ $labels }}"
+            runbook_url: ""
+
+        - alert: "NginxHighHttp5xxErrorRate"
+          expr: 'sum(rate(nginx_ingress_controller_requests{status=~"^5.."}[5m])) / sum(rate(nginx_ingress_controller_requests[5m])) * 100 > 5'
+          for: "5m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: "Nginx high HTTP 5xx error rate (instance {{ $labels.instance }})"
+            description: "Too many HTTP requests with status 5xx (> 5%).\nValue: {{ $value }}\nLabels: {{ $labels }}"
+            runbook_url: ""
+
+        - alert: "NginxHighLatency"
+          expr: 'histogram_quantile(0.99, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m])) by(host, le)) > 5'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Nginx high latency (instance {{ $labels.instance }})"
+            description: "Nginx P99 latency is higher than 5 seconds.\nValue: {{ $value }}\nLabels: {{ $labels }}"
+            runbook_url: ""
