@@ -9,7 +9,7 @@ spec:
   groups:
     - name: "karpenter.rules"
       rules:
-        - alert: "KarpenterCanNotRegisterNewNodes"
+       - alert: "KarpenterCanNotRegisterNewNodes"
           expr: |
             (sum(karpenter_nodeclaims_launched) by(nodepool) - sum(karpenter_nodeclaims_registered) by(nodepool)) != 0
           for: "15m"
@@ -23,14 +23,14 @@ spec:
 
         - alert: "KarpenterNodepoolAlmostFull"
           expr: |
-            (sum(karpenter_nodepool_usage) by(nodepool, resource_type) / sum(karpenter_nodepool_limit) by(nodepool, resource_type)) * 100 > 80
+            floor((sum(karpenter_nodepool_usage) by(nodepool, resource_type) / sum(karpenter_nodepool_limit) by(nodepool, resource_type)) * 100) > 80
           for: "15m"
           labels:
             severity: "warning"
           annotations:
             summary: "Nodepool almost full, you should increase limits."
             description: |
-              Nodepool `{{ $labels.nodepool }}` launched `{{ $value }}`% `{{ $labels.resource_type }}` resources of the limit.
+              Nodepool `{{ $labels.nodepool }}` launched `{{ $value }}%` `{{ $labels.resource_type }}` resources of the limit.
             runbook_url: "https://karpenter.sh/v0.37/reference/metrics/#nodeclaims-metrics"
 
         - alert: "KarpenterCloudproviderErrors"
