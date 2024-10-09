@@ -48,3 +48,34 @@ spec:
             summary: "Loki discarded logs per {{ $labels.tenant }} and {{ $labels.reason }} over the last 30 minutes is above 100."
             description: "A tenant is experiencing rate limiting. The number of discarded logs per tenant and reason over the last 30 minutes is above 100."
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokitenantratelimitwarning"
+
+        # Warning! Those rules depend on your storage configuration:
+        - alert: "LokiUploadStorageOperationFailure"
+          expr: 'sum(increase(loki_tsdb_shipper_tables_upload_operation_total{status="failure"}[15m])) by(container) > 0'
+          for: "5m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: "The Loki {{ $labels.container }} can't upload data to remote storage."
+            description: "The Loki {{ $labels.container }} can't upload data to remote storage."
+            runbook_url: ""
+
+        - alert: "LokiSyncStorageOperationFailure"
+          expr: 'sum(increase(loki_tsdb_shipper_tables_sync_operation_total{status="failure"}[15m])) by(container) > 0'
+          for: "5m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: "The Loki {{ $labels.container }} can't sync data between local and remote storage."
+            description: "The Loki {{ $labels.container }} can't sync data between local and remote storage."
+            runbook_url: ""
+
+        - alert: "LokiDownloadStorageOperationSeconds"
+          expr: 'sum(increase(loki_tsdb_shipper_tables_download_operation_duration_seconds[15m])) by(container) > 1'
+          for: "5m"
+          labels:
+            severity: "error"
+          annotations:
+            summary: "The Loki {{ $labels.container }} has an access delay to storage."
+            description: "The Loki {{ $labels.container }} has an access delay to storage: {{ $value }}s"
+            runbook_url: ""
