@@ -466,7 +466,6 @@
             }
           },
           "mappings": [],
-          "max": 100,
           "min": 0,
           "noValue": "0",
           "thresholds": {
@@ -565,7 +564,6 @@
             }
           },
           "mappings": [],
-          "max": 100,
           "min": 0,
           "noValue": "0",
           "thresholds": {
@@ -583,32 +581,7 @@
           },
           "unit": "none"
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "sand-node-pool"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
@@ -796,7 +769,6 @@
             }
           },
           "mappings": [],
-          "max": 100,
           "min": 0,
           "noValue": "0",
           "thresholds": {
@@ -895,7 +867,6 @@
             }
           },
           "mappings": [],
-          "max": 100,
           "min": 0,
           "noValue": "0",
           "thresholds": {
@@ -994,7 +965,6 @@
             }
           },
           "mappings": [],
-          "max": 100,
           "min": 0,
           "noValue": "0",
           "thresholds": {
@@ -1093,7 +1063,6 @@
             }
           },
           "mappings": [],
-          "max": 100,
           "min": 0,
           "noValue": "0",
           "thresholds": {
@@ -1596,13 +1565,13 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-12h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Karpenter Pools",
   "uid": "ce0d6ks35x05cb",
-  "version": 35,
+  "version": 37,
   "weekStart": ""
 }
