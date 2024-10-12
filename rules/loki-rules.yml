@@ -71,10 +71,10 @@ spec:
             runbook_url: ""
 
         - alert: "LokiDownloadStorageOperationSeconds"
-          expr: 'sum(increase(loki_tsdb_shipper_tables_download_operation_duration_seconds[15m])) by(container) > 1'
+          expr: 'sum(increase(loki_tsdb_shipper_tables_download_operation_duration_seconds[15m])) by(container) > 2'
           for: "5m"
           labels:
-            severity: "error"
+            severity: "warning"
           annotations:
             summary: "The Loki {{ $labels.container }} has an access delay to storage."
             description: "The Loki {{ $labels.container }} has an access delay to storage: {{ $value }}s"
