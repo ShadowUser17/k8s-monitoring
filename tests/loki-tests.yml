@@ -1,0 +1,34 @@
+rule_files: ["loki-rules.yml"]
+
+tests:
+  - name: "loki-alert.rules"
+    interval: "1m"
+    input_series:
+      - series: 'loki_tsdb_shipper_tables_upload_operation_total{status="failure",container="ingester"}'
+        values: "1x5 0x5 3x5"
+    alert_rule_test:
+      - alertname: "LokiUploadStorageOperationFailure"
+        eval_time: "20m"
+        exp_alerts: []
+
+  - name: "loki-alert.rules"
+    interval: "1m"
+    input_series:
+      - series: 'loki_tsdb_shipper_tables_sync_operation_total{status="failure",container="ingester"}'
+        values: "1x5 0x5 3x5"
+    alert_rule_test:
+      - alertname: "LokiSyncStorageOperationFailure"
+        eval_time: "20m"
+        exp_alerts: []
+
+  - name: "loki-alert.rules"
+    interval: "1m"
+    input_series:
+      - series: 'loki_tsdb_shipper_tables_download_operation_duration_seconds{container="ingester"}'
+        values: "1x3 2x2 0x5 6x5"
+      - series: 'loki_tsdb_shipper_tables_download_operation_duration_seconds{container="querier"}'
+        values: "0x3 1x2 0x5 5x5"
+    alert_rule_test:
+      - alertname: "LokiDownloadStorageOperationSeconds"
+        eval_time: "20m"
+        exp_alerts: []

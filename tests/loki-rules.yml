@@ -1,0 +1,73 @@
+groups:
+  - name: "loki-alert.rules"
+    rules:
+      - alert: "LokiRequestErrors"
+        expr: 'sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[5m])) by(namespace, job, route) / sum(rate(loki_request_duration_seconds_count[5m])) by(namespace, job, route) * 100 > 10'
+        for: "15m"
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "Loki request errors of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}"
+          description: "At least 10% of requests are responded by 5xx server errors."
+          runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequesterrors"
+
+      - alert: "LokiRequestPanics"
+        expr: 'sum(increase(loki_panic_total[5m])) by(namespace, job) > 0'
+        for: "15m"
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "Loki request panic of {{ $labels.job }} is {{ printf \"%.2f\" $value }}"
+          description: ""
+          runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestpanics"
+
+      - alert: "LokiRequestLatency"
+        expr: 'histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~".*/QuerierLoop"}[5m])) by(namespace, job, route, le)) > 10'
+        for: "15m"
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
+          description: "The 99th percentile is experiencing high latency (higher than 10 second)."
+          runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestlatency"
+
+      - alert: "LokiTenantRateLimit"
+        expr: 'sum(sum_over_time(rate(loki_discarded_samples_total[2m])[30m:1m])) by(namespace, tenant, reason) > 100'
+        for: "15m"
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "Loki discarded logs per {{ $labels.tenant }} and {{ $labels.reason }} over the last 30 minutes is above 100."
+          description: "A tenant is experiencing rate limiting. The number of discarded logs per tenant and reason over the last 30 minutes is above 100."
+          runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokitenantratelimitwarning"
+
+      # Warning! Those rules depend on your storage configuration:
+      - alert: "LokiUploadStorageOperationFailure"
+        expr: 'sum(increase(loki_tsdb_shipper_tables_upload_operation_total{status="failure"}[15m])) by(container) > 0'
+        for: "5m"
+        labels:
+          severity: "error"
+        annotations:
+          summary: "The Loki {{ $labels.container }} can't upload data to remote storage."
+          description: "The Loki {{ $labels.container }} can't upload data to remote storage."
+          runbook_url: ""
+
+      - alert: "LokiSyncStorageOperationFailure"
+        expr: 'sum(increase(loki_tsdb_shipper_tables_sync_operation_total{status="failure"}[15m])) by(container) > 0'
+        for: "5m"
+        labels:
+          severity: "error"
+        annotations:
+          summary: "The Loki {{ $labels.container }} can't sync data between local and remote storage."
+          description: "The Loki {{ $labels.container }} can't sync data between local and remote storage."
+          runbook_url: ""
+
+      - alert: "LokiDownloadStorageOperationSeconds"
+        expr: 'sum(increase(loki_tsdb_shipper_tables_download_operation_duration_seconds[15m])) by(container) > 2'
+        for: "5m"
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "The Loki {{ $labels.container }} has an access delay to storage."
+          description: "The Loki {{ $labels.container }} has an access delay to storage: {{ $value | humanize }}s"
+          runbook_url: ""

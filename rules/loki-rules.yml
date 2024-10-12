@@ -77,5 +77,5 @@ spec:
             severity: "warning"
           annotations:
             summary: "The Loki {{ $labels.container }} has an access delay to storage."
-            description: "The Loki {{ $labels.container }} has an access delay to storage: {{ $value }}s"
+            description: "The Loki {{ $labels.container }} has an access delay to storage: {{ $value | humanize }}s"
             runbook_url: ""
