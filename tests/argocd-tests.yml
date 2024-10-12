@@ -1,0 +1,52 @@
+rule_files: ["argocd-rules.yml"]
+
+tests:
+  - name: "argocd.rules"
+    interval: "1m"
+    input_series:
+      - series: 'argocd_app_info{instance="10.42.2.237:8082",project="qa",name="test",sync_status="OutOfSync"}'
+        values: "1x10"
+    alert_rule_test:
+      - alertname: "ArgocdServiceNotSynced"
+        eval_time: "15m"
+        exp_alerts: []
+
+  - name: "argocd.rules"
+    interval: "1m"
+    input_series:
+      - series: 'argocd_app_info{instance="10.42.2.237:8082",project="qa",name="test",health_status="Degraded"}'
+        values: "1x10"
+    alert_rule_test:
+      - alertname: "ArgocdServiceUnhealthy"
+        eval_time: "15m"
+        exp_alerts: []
+
+  - name: "argocd.rules"
+    interval: "1m"
+    input_series:
+      - series: 'argocd_app_info{instance="10.42.2.237:8082",project="qa",name="test",autosync_enabled="false"}'
+        values: "1x10"
+    alert_rule_test:
+      - alertname: "ArgocdAppAutoSyncDisabled"
+        eval_time: "1h"
+        exp_alerts: []
+
+  - name: "argocd.rules"
+    interval: "1m"
+    input_series:
+      - series: 'argocd_app_sync_total{instance="10.42.2.237:8082",project="qa",name="test",phase="Failed"}'
+        values: "1x10"
+    alert_rule_test:
+      - alertname: "ArgocdAppSyncFailed"
+        eval_time: "5m"
+        exp_alerts: []
+
+  - name: "argocd.rules"
+    interval: "1m"
+    input_series:
+      - series: 'argocd_notifications_deliveries_total{instance="10.42.2.237:8082",job="argocd",service="test",succeeded="false"}'
+        values: "1x10"
+    alert_rule_test:
+      - alertname: "ArgocdNotificationDeliveryFailed"
+        eval_time: "5m"
+        exp_alerts: []
