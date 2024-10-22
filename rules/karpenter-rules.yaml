@@ -9,7 +9,7 @@ spec:
   groups:
     - name: "karpenter.rules"
       rules:
-       - alert: "KarpenterCanNotRegisterNewNodes"
+        - alert: "KarpenterCanNotRegisterNewNodes"
           expr: |
             (sum(karpenter_nodeclaims_launched) by(nodepool) - sum(karpenter_nodeclaims_registered) by(nodepool)) != 0
           for: "15m"
@@ -39,6 +39,6 @@ spec:
           labels:
             severity: "warning"
           annotations:
-            summary: "Karpenter received an error during an api call to the cloud provider."
-            description: "Karpenter received an error during an api call to the cloud provider."
+            summary: "Karpenter received an {{ $labels.error }} during an api call to the cloud provider."
+            description: "Karpenter received an {{ $labels.error }} during an api call to the cloud provider."
             runbook_url: "https://karpenter.sh/v0.37/reference/metrics/#cloudprovider-metrics"
