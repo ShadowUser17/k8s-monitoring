@@ -1,0 +1,429 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "thanos-rules"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  groups:
+    - name: "thanos-record.rules"
+      rules:
+        - expr: |
+            (
+              sum by(job) (rate(grpc_client_handled_total{grpc_code=~"Unknown|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-query.*", grpc_type="unary"}[5m]))
+            /
+              sum by(job) (rate(grpc_client_started_total{job=~".*thanos-query.*", grpc_type="unary"}[5m]))
+            )
+          record: ":grpc_client_failures_per_unary:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(grpc_client_handled_total{grpc_code=~"Unknown|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-query.*", grpc_type="server_stream"}[5m]))
+            /
+              sum by(job) (rate(grpc_client_started_total{job=~".*thanos-query.*", grpc_type="server_stream"}[5m]))
+            )
+          record: ":grpc_client_failures_per_stream:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(thanos_query_store_apis_dns_failures_total{job=~".*thanos-query.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_query_store_apis_dns_lookups_total{job=~".*thanos-query.*"}[5m]))
+            )
+          record: ":thanos_query_store_apis_dns_failures_per_lookup:sum_rate"
+
+        - expr: 'histogram_quantile(0.99, sum by(job, le) (rate(http_request_duration_seconds_bucket{job=~".*thanos-query.*", handler="query"}[5m])))'
+          record: ":query_duration_seconds:histogram_quantile"
+          labels:
+            quantile: "0.99"
+
+        - expr: 'histogram_quantile(0.99, sum by(job, le) (rate(http_request_duration_seconds_bucket{job=~".*thanos-query.*", handler="query_range"}[5m])))'
+          record: ":api_range_query_duration_seconds:histogram_quantile"
+          labels:
+            quantile: "0.99"
+
+        - expr: |
+            (
+              sum by(job) (rate(grpc_server_handled_total{grpc_code=~"Unknown|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-receive.*", grpc_type="unary"}[5m]))
+            /
+              sum by(job) (rate(grpc_server_started_total{job=~".*thanos-receive.*", grpc_type="unary"}[5m]))
+            )
+          record: ":grpc_server_failures_per_unary:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(grpc_server_handled_total{grpc_code=~"Unknown|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-receive.*", grpc_type="server_stream"}[5m]))
+            /
+              sum by(job) (rate(grpc_server_started_total{job=~".*thanos-receive.*", grpc_type="server_stream"}[5m]))
+            )
+          record: ":grpc_server_failures_per_stream:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(http_requests_total{handler="receive", job=~".*thanos-receive.*", code!~"5.."}[5m]))
+            /
+              sum by(job) (rate(http_requests_total{handler="receive", job=~".*thanos-receive.*"}[5m]))
+            )
+          record: ":http_failure_per_request:sum_rate"
+
+        - expr: 'histogram_quantile(0.99, sum by(job, le) (rate(http_request_duration_seconds_bucket{handler="receive", job=~".*thanos-receive.*"}[5m])))'
+          record: ":http_request_duration_seconds:histogram_quantile"
+          labels:
+            quantile: "0.99"
+
+        - expr: |
+            (
+              sum by(job) (rate(thanos_receive_replications_total{result="error", job=~".*thanos-receive.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_receive_replications_total{job=~".*thanos-receive.*"}[5m]))
+            )
+          record: ":thanos_receive_replication_failure_per_requests:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(thanos_receive_forward_requests_total{result="error", job=~".*thanos-receive.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_receive_forward_requests_total{job=~".*thanos-receive.*"}[5m]))
+            )
+          record: ":thanos_receive_forward_failure_per_requests:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(thanos_receive_hashrings_file_errors_total{job=~".*thanos-receive.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_receive_hashrings_file_refreshes_total{job=~".*thanos-receive.*"}[5m]))
+            )
+          record: ":thanos_receive_hashring_file_failure_per_refresh:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(grpc_server_handled_total{grpc_code=~"Unknown|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-store.*", grpc_type="unary"}[5m]))
+            /
+              sum by(job) (rate(grpc_server_started_total{job=~".*thanos-store.*", grpc_type="unary"}[5m]))
+            )
+          record: ":grpc_server_failures_per_unary:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(grpc_server_handled_total{grpc_code=~"Unknown|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-store.*", grpc_type="server_stream"}[5m]))
+            /
+              sum by(job) (rate(grpc_server_started_total{job=~".*thanos-store.*", grpc_type="server_stream"}[5m]))
+            )
+          record: ":grpc_server_failures_per_stream:sum_rate"
+
+        - expr: |
+            (
+              sum by(job) (rate(thanos_objstore_bucket_operation_failures_total{job=~".*thanos-store.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_objstore_bucket_operations_total{job=~".*thanos-store.*"}[5m]))
+            )
+          record: ":thanos_objstore_bucket_failures_per_operation:sum_rate"
+
+        - expr: 'histogram_quantile(0.99, sum by(job, le) (rate(thanos_objstore_bucket_operation_duration_seconds_bucket{job=~".*thanos-store.*"}[5m])))'
+          record: ":thanos_objstore_bucket_operation_duration_seconds:histogram_quantile"
+          labels:
+            quantile: "0.99"
+
+    - name: "thanos-compact.rules"
+      rules:
+        - alert: "ThanosCompactMultipleRunning"
+          expr: 'sum by(job) (up{job=~".*thanos-compact.*"}) > 1'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Compact has multiple instances running."
+            description: "No more than one Thanos Compact instance should be running at once. There are {{$value}} instances running."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompactmultiplerunning"
+
+        - alert: "ThanosCompactHalted"
+          expr: 'thanos_compact_halted{job=~".*thanos-compact.*"} == 1'
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Compact has failed to run and is now halted."
+            description: "Thanos Compact {{$labels.job}} has failed to run and now is halted."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompacthalted"
+
+        - alert: "ThanosCompactHighCompactionFailures"
+          expr: |
+            (
+              sum by(job) (rate(thanos_compact_group_compactions_failures_total{job=~".*thanos-compact.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_compact_group_compactions_total{job=~".*thanos-compact.*"}[5m])) * 100 > 5
+            )
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Compact is failing to execute compactions."
+            description: "Thanos Compact {{$labels.job}} is failing to execute {{$value | humanize}}% of compactions."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompacthighcompactionfailures"
+
+        - alert: "ThanosCompactBucketHighOperationFailures"
+          expr: |
+            (
+              sum by(job) (rate(thanos_objstore_bucket_operation_failures_total{job=~".*thanos-compact.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_objstore_bucket_operations_total{job=~".*thanos-compact.*"}[5m])) * 100 > 5
+            )
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Compact Bucket is having a high number of operation failures."
+            description: "Thanos Compact {{$labels.job}} Bucket is failing to execute {{$value | humanize}}% of operations."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompactbuckethighoperationfailures"
+
+        - alert: "ThanosCompactHasNotRun"
+          expr: '(time() - max by(job) (max_over_time(thanos_objstore_bucket_last_successful_upload_time{job=~".*thanos-compact.*"}[24h]))) / 60 / 60 > 24'
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Compact has not uploaded anything for last 24 hours."
+            description: "Thanos Compact {{$labels.job}} has not uploaded anything for 24 hours."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompacthasnotrun"
+
+    - name: "thanos-query.rules"
+      rules:
+        - alert: "ThanosQueryHttpRequestQueryErrorRateHigh"
+          expr: |
+            (
+              sum by(job) (rate(http_requests_total{code=~"5..", job=~".*thanos-query.*", handler="query"}[5m]))
+            /
+              sum by(job) (rate(http_requests_total{job=~".*thanos-query.*", handler="query"}[5m]))
+            ) * 100 > 5
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Query is failing to handle requests."
+            description: "Thanos Query {{$labels.job}} is failing to handle {{$value | humanize}}% of query requests."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryhttprequestqueryerrorratehigh"
+
+        - alert: "ThanosQueryHttpRequestQueryRangeErrorRateHigh"
+          expr: |
+            (
+              sum by(job) (rate(http_requests_total{code=~"5..", job=~".*thanos-query.*", handler="query_range"}[5m]))
+            /
+              sum by(job) (rate(http_requests_total{job=~".*thanos-query.*", handler="query_range"}[5m]))
+            ) * 100 > 5
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Query is failing to handle requests."
+            description: "Thanos Query {{$labels.job}} is failing to handle {{$value | humanize}}% of query_range requests."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryhttprequestqueryrangeerrorratehigh"
+
+        - alert: "ThanosQueryGrpcServerErrorRate"
+          expr: |
+            (
+              sum by(job) (rate(grpc_server_handled_total{grpc_code=~"Unknown|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-query.*"}[5m]))
+            /
+              sum by(job) (rate(grpc_server_started_total{job=~".*thanos-query.*"}[5m])) * 100 > 5
+            )
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Query is failing to handle requests."
+            description: "Thanos Query {{$labels.job}} is failing to handle {{$value | humanize}}% of requests."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosquerygrpcservererrorrate"
+
+        - alert: "ThanosQueryGrpcClientErrorRate"
+          expr: |
+            (
+              sum by(job) (rate(grpc_client_handled_total{grpc_code!="OK", job=~".*thanos-query.*"}[5m]))
+            /
+              sum by(job) (rate(grpc_client_started_total{job=~".*thanos-query.*"}[5m]))
+            ) * 100 > 5
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Query is failing to send requests."
+            description: "Thanos Query {{$labels.job}} is failing to send {{$value | humanize}}% of requests."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosquerygrpcclienterrorrate"
+
+        - alert: "ThanosQueryHighDNSFailures"
+          expr: |
+            (
+              sum by(job) (rate(thanos_query_store_apis_dns_failures_total{job=~".*thanos-query.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_query_store_apis_dns_lookups_total{job=~".*thanos-query.*"}[5m]))
+            ) * 100 > 1
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Query is having high number of DNS failures."
+            description: "Thanos Query {{$labels.job}} have {{$value | humanize}}% of failing DNS queries for store endpoints."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryhighdnsfailures"
+
+        - alert: "ThanosQueryInstantLatencyHigh"
+          expr: |
+            (
+              histogram_quantile(0.99, sum by(job, le) (rate(http_request_duration_seconds_bucket{job=~".*thanos-query.*", handler="query"}[5m]))) > 40
+            and
+              sum by(job) (rate(http_request_duration_seconds_bucket{job=~".*thanos-query.*", handler="query"}[5m])) > 0
+            )
+          for: "10m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Query has high latency for queries."
+            description: "Thanos Query {{$labels.job}} has a 99th percentile latency of {{$value}} seconds for instant queries."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryinstantlatencyhigh"
+
+        - alert: "ThanosQueryRangeLatencyHigh"
+          expr: |
+            (
+              histogram_quantile(0.99, sum by(job, le) (rate(http_request_duration_seconds_bucket{job=~".*thanos-query.*", handler="query_range"}[5m]))) > 90
+            and
+              sum by(job) (rate(http_request_duration_seconds_count{job=~".*thanos-query.*", handler="query_range"}[5m])) > 0
+            )
+          for: "10m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Query has high latency for queries."
+            description: "Thanos Query {{$labels.job}} has a 99th percentile latency of {{$value}} seconds for range queries."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryrangelatencyhigh"
+
+        - alert: "ThanosQueryOverload"
+          expr: |
+            (
+              max_over_time(thanos_query_concurrent_gate_queries_max[5m]) - avg_over_time(thanos_query_concurrent_gate_queries_in_flight[5m]) < 1
+            )
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos query reaches its maximum capacity serving concurrent requests."
+            description: |
+              Thanos Query {{$labels.job}} has been overloaded for more than
+              15 minutes. This may be a symptom of excessive simultanous complex requests,
+              low performance of the Prometheus API, or failures within these components.
+              Assess the health of the Thanos query instances, the connnected Prometheus
+              instances, look for potential senders of these requests and then contact support.
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryoverload"
+
+    - name: "thanos-sidecar.rules"
+      rules:
+        - alert: "ThanosSidecarBucketOperationsFailed"
+          expr: 'sum by(job, instance) (rate(thanos_objstore_bucket_operation_failures_total{job=~".*thanos-sidecar.*"}[5m])) > 0'
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Sidecar bucket operations are failing."
+            description: "Thanos Sidecar {{$labels.instance}} bucket operations are failing."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanossidecarbucketoperationsfailed"
+
+        - alert: "ThanosSidecarNoConnectionToStartedPrometheus"
+          expr: |
+            thanos_sidecar_prometheus_up{job=~".*thanos-sidecar.*"} == 0
+            and on(namespace, pod)
+            prometheus_tsdb_data_replay_duration_seconds != 0
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Sidecar cannot access Prometheus, even though Prometheus seems healthy and has reloaded WAL."
+            description: "Thanos Sidecar {{$labels.instance}} is unhealthy."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanossidecarnoconnectiontostartedprometheus"
+
+    - name: "thanos-store.rules"
+      rules:
+        - alert: "ThanosStoreGrpcErrorRate"
+          expr: |
+            (
+              sum by(job) (rate(grpc_server_handled_total{grpc_code=~"Unknown|Internal|Unavailable|DataLoss|DeadlineExceeded", job=~".*thanos-store.*"}[5m]))
+            /
+              sum by(job) (rate(grpc_server_started_total{job=~".*thanos-store.*"}[5m])) * 100 > 5
+            )
+          for: "5m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Store is failing to handle gRPC requests."
+            description: "Thanos Store {{$labels.job}} is failing to handle {{$value | humanize}}% of requests."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoregrpcerrorrate"
+
+        - alert: "ThanosStoreSeriesGateLatencyHigh"
+          expr: |
+            (
+              histogram_quantile(0.99, sum by(job, le) (rate(thanos_bucket_store_series_gate_duration_seconds_bucket{job=~".*thanos-store.*"}[5m]))) > 2
+            and
+              sum by(job) (rate(thanos_bucket_store_series_gate_duration_seconds_count{job=~".*thanos-store.*"}[5m])) > 0
+            )
+          for: "10m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Store has high latency for store series gate requests."
+            description: "Thanos Store {{$labels.job}} has a 99th percentile latency of {{$value}} seconds for store series gate requests."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoreseriesgatelatencyhigh"
+
+        - alert: "ThanosStoreBucketHighOperationFailures"
+          expr: |
+            (
+              sum by(job) (rate(thanos_objstore_bucket_operation_failures_total{job=~".*thanos-store.*"}[5m]))
+            /
+              sum by(job) (rate(thanos_objstore_bucket_operations_total{job=~".*thanos-store.*"}[5m])) * 100 > 5
+            )
+          for: "15m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Store Bucket is failing to execute operations."
+            description: "Thanos Store {{$labels.job}} Bucket is failing to execute {{$value | humanize}}% of operations."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstorebuckethighoperationfailures"
+
+        - alert: "ThanosStoreObjstoreOperationLatencyHigh"
+          expr: |
+            (
+              histogram_quantile(0.99, sum by(job, le) (rate(thanos_objstore_bucket_operation_duration_seconds_bucket{job=~".*thanos-store.*"}[5m]))) > 2
+            and
+              sum by(job) (rate(thanos_objstore_bucket_operation_duration_seconds_count{job=~".*thanos-store.*"}[5m])) > 0
+            )
+          for: "10m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "Thanos Store is having high latency for bucket operations."
+            description: "Thanos Store {{$labels.job}} Bucket has a 99th percentile latency of {{$value}} seconds for the bucket operations."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoreobjstoreoperationlatencyhigh"
+
+        - alert: "ThanosBucketReplicateErrorRate"
+          expr: |
+            (
+              sum by(job) (rate(thanos_replicate_replication_runs_total{result="error", job=~".*thanos-bucket-replicate.*"}[5m]))
+            / on(job) group_left
+              sum by(job) (rate(thanos_replicate_replication_runs_total{job=~".*thanos-bucket-replicate.*"}[5m]))
+            ) * 100 >= 10
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Replicate is failing to run."
+            description: "Thanos Replicate is failing to run, {{$value | humanize}}% of attempts failed."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosbucketreplicateerrorrate"
+
+        - alert: "ThanosBucketReplicateRunLatency"
+          expr: |
+            (
+              histogram_quantile(0.99, sum by(job) (rate(thanos_replicate_replication_run_duration_seconds_bucket{job=~".*thanos-bucket-replicate.*"}[5m]))) > 20
+            and
+              sum by(job) (rate(thanos_replicate_replication_run_duration_seconds_bucket{job=~".*thanos-bucket-replicate.*"}[5m])) > 0
+            )
+          for: "5m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "Thanos Replicate has a high latency for replicate operations."
+            description: "Thanos Replicate {{$labels.job}} has a 99th percentile latency of {{$value}} seconds for the replicate operations."
+            runbook_url: "https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosbucketreplicaterunlatency"
