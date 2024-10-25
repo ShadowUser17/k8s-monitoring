@@ -15,8 +15,8 @@ spec:
           labels:
             severity: "warning"
           annotations:
-            summary: "Loki request errors of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}"
-            description: "At least 10% of requests are responded by 5xx server errors."
+            summary: "At least 10% of requests are responded by 5xx server errors."
+            description: "Loki request errors of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}"
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequesterrors"
 
         - alert: "LokiRequestPanics"
@@ -26,7 +26,7 @@ spec:
             severity: "warning"
           annotations:
             summary: "Loki request panic of {{ $labels.job }} is {{ printf \"%.2f\" $value }}"
-            description: ""
+            description: "Loki request panic of {{ $labels.job }} is {{ printf \"%.2f\" $value }}"
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestpanics"
 
         - alert: "LokiRequestLatency"
@@ -35,8 +35,8 @@ spec:
           labels:
             severity: "warning"
           annotations:
-            summary: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
-            description: "The 99th percentile is experiencing high latency (higher than 10 second)."
+            summary: "The 99th percentile is experiencing high latency (higher than 10 second)"
+            description: "Loki request latency of {{ $labels.job }}/{{ $labels.route }} is {{ printf \"%.2f\" $value }}s"
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokirequestlatency"
 
         - alert: "LokiTenantRateLimit"
@@ -45,8 +45,8 @@ spec:
           labels:
             severity: "warning"
           annotations:
-            summary: "Loki discarded logs per {{ $labels.tenant }} and {{ $labels.reason }} over the last 30 minutes is above 100."
-            description: "A tenant is experiencing rate limiting. The number of discarded logs per tenant and reason over the last 30 minutes is above 100."
+            summary: "The number of discarded logs per tenant and reason over the last 30 minutes is above 100."
+            description: "Loki discarded logs per {{ $labels.tenant }} and {{ $labels.reason }} over the last 30 minutes is above 100."
             runbook_url: "https://github.com/rhobs/configuration/blob/main/docs/sop/observatorium.md#lokitenantratelimitwarning"
 
         # Warning! Those rules depend on your storage configuration:
