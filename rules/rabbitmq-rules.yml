@@ -1,0 +1,110 @@
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "rabbitmq-rules"
+  namespace: "monitoring"
+  labels:
+    release: "prom-operator"
+spec:
+  groups:
+    - name: "rabbitmq-alert.rules"
+      rules:
+        - alert: "RabbitmqNodeDown"
+          expr: 'sum(rabbitmq_build_info) by(namespace) < 3'
+          for: "0m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: 'RabbitMQ node down (namespace {{ $labels.namespace }})'
+            description: 'Less than 3 nodes running in RabbitMQ cluster: `{{ $labels.namespace }}`'
+            runbook_url: ""
+
+        - alert: "RabbitmqNodeNotDistributed"
+          expr: 'sum(erlang_vm_dist_node_state) by(namespace, pod, peer) < 3'
+          for: "0m"
+          labels:
+            severity: "critical"
+          annotations:
+            summary: 'RabbitMQ node not distributed (namespace {{ $labels.namespace }})'
+            description: "Distribution link state is not up: `{{ $labels.namespace }}/{{ $labels.pod }}`"
+            runbook_url: ""
+
+        - alert: "RabbitmqInstancesDifferentVersions"
+          expr: 'count(rabbitmq_build_info) by(namespace, rabbitmq_version) > 3'
+          for: "1h"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'RabbitMQ instances different versions (namespace {{ $labels.namespace }})'
+            description: 'Running different version of RabbitMQ in the same cluster, can lead to failure: `{{ $labels.namespace }}`'
+            runbook_url: ""
+
+        - alert: "RabbitmqMemoryHigh"
+          expr: |
+            sum(
+              rabbitmq_process_resident_memory_bytes /
+              rabbitmq_resident_memory_limit_bytes * 100
+            ) by(namespace, pod) > 90
+          for: "2m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'RabbitMQ memory high (namespace {{ $labels.namespace }})'
+            description: 'A node use more than 90% of allocated RAM: `{{ $labels.namespace }}/{{ $labels.pod }}`'
+            runbook_url: ""
+
+        - alert: "RabbitmqFileDescriptorsUsage"
+          expr: |
+            sum(
+              rabbitmq_process_open_fds /
+              rabbitmq_process_max_fds * 100
+            ) by(namespace, pod) > 90
+          for: "2m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'RabbitMQ file descriptors usage (namespace {{ $labels.namespace }})'
+            description: 'A node use more than 90% of file descriptors: `{{ $labels.namespace }}/{{ $labels.pod }}`'
+            runbook_url: ""
+
+        - alert: "RabbitmqTooManyUnackMessages"
+          expr: 'sum(rabbitmq_queue_messages_unacked) by(namespace, queue) > 1000'
+          for: "1m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'RabbitMQ too many unack messages (namespace {{ $labels.namespace }})'
+            description: 'Too many unacknowledged messages: `{{ $labels.namespace }}/{{ $labels.queue }}`'
+            runbook_url: ""
+
+        - alert: "RabbitmqTooManyConnections"
+          expr: 'sum(rabbitmq_connections) by(namespace, pod) > 1000'
+          for: "2m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'RabbitMQ too many connections (namespace {{ $labels.namespace }})'
+            description: 'The total connections of the {{ $labels.namespace }}/{{ $labels.pod }} is too high: {{ $value }}'
+            runbook_url: ""
+
+        - alert: "RabbitmqNoQueueConsumer"
+          expr: 'sum(rabbitmq_queue_consumers) by(namespace, pod) < 1'
+          for: "1m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'RabbitMQ no queue consumer (namespace {{ $labels.namespace }})'
+            description: 'A queue has less than 1 consumer: `{{ $labels.namespace }}/{{ $labels.pod }}`'
+            runbook_url: ""
+
+        - alert: "RabbitmqUnroutableMessages"
+          expr: |
+            sum(increase(rabbitmq_channel_messages_unroutable_returned_total[2m])) by(namespace, pod) > 0
+            or sum(increase(rabbitmq_channel_messages_unroutable_dropped_total[2m])) by(namespace, pod) > 0
+          for: "2m"
+          labels:
+            severity: "warning"
+          annotations:
+            summary: 'RabbitMQ unroutable messages (namespace {{ $labels.namespace }})'
+            description: 'A queue has unroutable messages: `{{ $labels.namespace }}/{{ $labels.pod }}`'
+            runbook_url: ""
